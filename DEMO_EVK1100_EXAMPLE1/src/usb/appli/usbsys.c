@@ -61,32 +61,35 @@
 #include "conf_usb.h"
 #include "usb_drv.h"
 #include "usb_task.h"
-#if USB_DEVICE_FEATURE == true
+#if (USB_DEVICE_FEATURE == true)
 #include "device_mass_storage_task.h"
 #endif
-#if USB_HOST_FEATURE == true
+#if (USB_HOST_FEATURE == true)
 #include "host_mass_storage_task.h"
 #endif
 
 #include "shell.h"
 
+
 //_____ M A C R O S ________________________________________________________
 
-#define MSG_NO_DEVICE         "No supported device connected"CRLF
-#define MSG_REMOTE_WAKEUP_OK  "Device supports remote wake-up"CRLF
-#define MSG_REMOTE_WAKEUP_KO  "Device does not support remote wake-up"CRLF
-#define MSG_SELF_POWERED      "Device is self-powered"CRLF
-#define MSG_BUS_POWERED       "Device is bus-powered"CRLF
-#define MSG_USB_SUSPENDED     "USB is suspended!"CRLF
-#define MSG_OK                "OK"CRLF
-#define MSG_KO                "KO"CRLF
-#define MSG_DEVICE_FULL_SPEED "Device is full-speed"CRLF
-#define MSG_DEVICE_LOW_SPEED  "Device is low-speed"CRLF
+#define MSG_NO_DEVICE			"No supported device connected" CRLF
+#define MSG_REMOTE_WAKEUP_OK	"Device supports remote wake-up" CRLF
+#define MSG_REMOTE_WAKEUP_KO	"Device does not support remote wake-up" CRLF
+#define MSG_SELF_POWERED		"Device is self-powered" CRLF
+#define MSG_BUS_POWERED			"Device is bus-powered" CRLF
+#define MSG_USB_SUSPENDED		"USB is suspended!" CRLF
+#define MSG_OK					"OK" CRLF
+#define MSG_KO					"KO" CRLF
+#define MSG_DEVICE_FULL_SPEED	"Device is full-speed "CRLF
+#define MSG_DEVICE_LOW_SPEED	"Device is low-speed" CRLF
 
-#define MSG_COPY_LOGS_TO_KEY  "Copying the log files to the USB key"CRLF
-#define MSG_MOVE_LOGS_TO_KEY  "Moving the log files to the USB key"CRLF
-#define MSG_COPY_CFG_TO_LOCAL "Copying the /CFG directory from the USB key"CRLF
-#define MSG_COPY_WEB_TO_LOCAL "Copying the /WEB directory from the USB key"CRLF
+#define MSG_COPY_LOGS_TO_KEY	"Copying the log files to the USB key" CRLF
+#define MSG_MOVE_LOGS_TO_KEY	"Moving the log files to the USB key" CRLF
+#define MSG_COPY_CFG_TO_LOCAL	"Copying the /CFG directory from the USB key" CRLF
+#define MSG_COPY_WEB_TO_LOCAL	"Copying the /WEB directory from the USB key" CRLF
+
+
 
 //_____ D E F I N I T I O N S ______________________________________________
 
@@ -96,33 +99,30 @@
 extern int sprintf(char *out, const char *format, ...);  // From printf-stdarg.c
 
 // FORWARD
-static eExecStatus prv_e_usbsys_sync_cp_ukey( eModId xModId, signed short FsNavId,
-                                              signed portCHAR **ppcStringReply,
-                                              signed portCHAR *pcStringMsgAction,
-                                              U8 sync_direction, const char *pcdir_name,
-                                              bool bDeleteSrc );
+static eExecStatus prv_e_usbsys_sync_cp_ukey(eModId xModId, signed short FsNavId, signed portCHAR **ppcStringReply, signed portCHAR *pcStringMsgAction, U8 sync_direction, const char *pcdir_name, bool bDeleteSrc);
 
-/*!
- * Start the USB modules.
+
+
+/**
+ * \brief Start the USB modules.
  *
  * \return true upon success, else false.
  */
-bool b_usbsys_start( void )
-{
-   // Create the usb_tsk_semphr and launch the usb_task() task.
-   usb_task_init();
-#if USB_DEVICE_FEATURE == true
-  // Init the device Mass Storage module and
-  // create the device_mass_storage_task() task
-  device_mass_storage_task_init();
+bool b_usbsys_start(void) {
+	// Create the usb_tsk_semphr and launch the usb_task() task.
+	usb_task_init();
+#if (USB_DEVICE_FEATURE == true)
+	// Init the device Mass Storage module and
+	// create the device_mass_storage_task() task
+	device_mass_storage_task_init();
 #endif
-#if USB_HOST_FEATURE == true
-  // Init the host Mass Storage module and
-  // create the host_mass_storage_task() task
-  host_mass_storage_task_init();
+#if (USB_HOST_FEATURE == true)
+	// Init the host Mass Storage module and
+	// create the host_mass_storage_task() task
+	host_mass_storage_task_init();
 #endif
 
-   return( true );
+	return (true);
 }
 
 

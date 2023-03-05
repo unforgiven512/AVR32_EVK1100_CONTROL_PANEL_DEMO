@@ -61,15 +61,15 @@
 #include "macb.h"
 
 #if (HTTP_USED == 1)
-  #include "BasicWEB.h"
+#include "BasicWEB.h"
 #endif
 
 #if (TFTP_USED == 1)
-  #include "BasicTFTP.h"
+#include "BasicTFTP.h"
 #endif
 
 #if (SMTP_USED == 1)
-  #include "BasicSMTP.h"
+#include "BasicSMTP.h"
 #endif
 
 /* lwIP includes */
@@ -98,58 +98,53 @@
 struct netif MACB_if;
 
 /*! The CFG system mutex. */
-extern xSemaphoreHandle   xCFGMutex;
+extern xSemaphoreHandle xCFGMutex;
+
+
 
 //_____ D E C L A R A T I O N S ____________________________________________
 
 /* Initialisation required by lwIP. */
-static void prvlwIPInit( void );
+static void prvlwIPInit(void);
 
 /* Initialisation of Ethernet interfaces by reading config file */
-static void prvEthernetConfigureInterface(void * param);
+static void prvEthernetConfigureInterface(void *param);
 
-static void prv_v_set_default_macaddr( unsigned portCHAR aMacAddress[] ); // FORWARD
+static void prv_v_set_default_macaddr(unsigned portCHAR aMacAddress[]); // FORWARD
 
-static void prv_v_set_default_netconfig( unsigned portCHAR aMacAddress[],
-                                         struct ip_addr *pxIpAddr,
-                                         struct ip_addr *pxNetMask,
-                                         struct ip_addr *pxGateway ); // FORWARD
+static void prv_v_set_default_netconfig(unsigned portCHAR aMacAddress[], struct ip_addr *pxIpAddr, struct ip_addr *pxNetMask, struct ip_addr *pxGateway); // FORWARD
 
 
 /*-----------------------------------------------------------*/
 
-void vStartEthernetTaskLauncher( unsigned portBASE_TYPE uxPriority )
-{
-  /* Spawn the Sentinel task. */
-  xTaskCreate( vStartEthernetTask, ( const signed portCHAR * )"ETHLAUNCH",
-		       configMINIMAL_STACK_SIZE + 192, NULL, uxPriority, ( xTaskHandle * )NULL );
+void vStartEthernetTaskLauncher(unsigned portBASE_TYPE uxPriority) {
+	/* Spawn the Sentinel task. */
+	xTaskCreate(vStartEthernetTask, (const signed portCHAR*)"ETHLAUNCH", configMINIMAL_STACK_SIZE + 192, NULL, uxPriority, (xTaskHandle*)NULL);
 }
 
 /*
  * Configure lwIP and MACB, start lwIP layer, start servers tasks through lwIP services.
  */
-portTASK_FUNCTION( vStartEthernetTask, pvParameters )
-{
-static const gpio_map_t MACB_GPIO_MAP =
-{
-  {EXTPHY_MACB_MDC_PIN,     EXTPHY_MACB_MDC_FUNCTION   },
-  {EXTPHY_MACB_MDIO_PIN,    EXTPHY_MACB_MDIO_FUNCTION  },
-  {EXTPHY_MACB_RXD_0_PIN,   EXTPHY_MACB_RXD_0_FUNCTION },
-  {EXTPHY_MACB_TXD_0_PIN,   EXTPHY_MACB_TXD_0_FUNCTION },
-  {EXTPHY_MACB_RXD_1_PIN,   EXTPHY_MACB_RXD_1_FUNCTION },
-  {EXTPHY_MACB_TXD_1_PIN,   EXTPHY_MACB_TXD_1_FUNCTION },
-  {EXTPHY_MACB_TX_EN_PIN,   EXTPHY_MACB_TX_EN_FUNCTION },
-  {EXTPHY_MACB_RX_ER_PIN,   EXTPHY_MACB_RX_ER_FUNCTION },
-  {EXTPHY_MACB_RX_DV_PIN,   EXTPHY_MACB_RX_DV_FUNCTION },
-  {EXTPHY_MACB_TX_CLK_PIN,  EXTPHY_MACB_TX_CLK_FUNCTION}
-};
+portTASK_FUNCTION(vStartEthernetTask, pvParameters) {
+	static const gpio_map_t MACB_GPIO_MAP = {
+		{EXTPHY_MACB_MDC_PIN,     EXTPHY_MACB_MDC_FUNCTION   },
+		{EXTPHY_MACB_MDIO_PIN,    EXTPHY_MACB_MDIO_FUNCTION  },
+		{EXTPHY_MACB_RXD_0_PIN,   EXTPHY_MACB_RXD_0_FUNCTION },
+		{EXTPHY_MACB_TXD_0_PIN,   EXTPHY_MACB_TXD_0_FUNCTION },
+		{EXTPHY_MACB_RXD_1_PIN,   EXTPHY_MACB_RXD_1_FUNCTION },
+		{EXTPHY_MACB_TXD_1_PIN,   EXTPHY_MACB_TXD_1_FUNCTION },
+		{EXTPHY_MACB_TX_EN_PIN,   EXTPHY_MACB_TX_EN_FUNCTION },
+		{EXTPHY_MACB_RX_ER_PIN,   EXTPHY_MACB_RX_ER_FUNCTION },
+		{EXTPHY_MACB_RX_DV_PIN,   EXTPHY_MACB_RX_DV_FUNCTION },
+		{EXTPHY_MACB_TX_CLK_PIN,  EXTPHY_MACB_TX_CLK_FUNCTION}
+	};
 
-  // Assign GPIO to MACB
-  gpio_enable_module(MACB_GPIO_MAP, sizeof(MACB_GPIO_MAP) / sizeof(MACB_GPIO_MAP[0]));
+	// Assign GPIO to MACB
+	gpio_enable_module(MACB_GPIO_MAP, sizeof(MACB_GPIO_MAP) / sizeof(MACB_GPIO_MAP[0]));
 
 
-  /* Setup lwIP. */
-  prvlwIPInit();
+	/* Setup lwIP. */
+	prvlwIPInit();
 
 #if (HTTP_USED == 1)
   /* Create the WEB server task.  This uses the lwIP RTOS abstraction layer.*/
@@ -546,14 +541,13 @@ unsigned int AddrByte;
  *
  *  \return the status of the command execution.
  */
-eExecStatus e_ip_stat( eModId xModId, signed short FsNavId,
-                       int ac, signed portCHAR *av[],
-                       signed portCHAR **ppcStringReply )
-{
-   if( NULL != ppcStringReply )
-      *ppcStringReply = NULL;
-   stats_display();
-   return( SHELL_EXECSTATUS_OK );
+eExecStatus e_ip_stat(eModId xModId, signed short FsNavId, int ac, signed portCHAR *av[], signed portCHAR **ppcStringReply) {
+	if (NULL != ppcStringReply) {
+		*ppcStringReply = NULL;
+	}
+	stats_display();
+
+	return (SHELL_EXECSTATUS_OK);
 }
 
 
@@ -564,14 +558,13 @@ eExecStatus e_ip_stat( eModId xModId, signed short FsNavId,
  *
  *  \param aMacAddress[] Mac address array of len 6.
  */
-static void prv_v_set_default_macaddr( unsigned portCHAR aMacAddress[] )
-{
-   aMacAddress[0] = ETHERNET_CONF_ETHADDR0;
-   aMacAddress[1] = ETHERNET_CONF_ETHADDR1;
-   aMacAddress[2] = ETHERNET_CONF_ETHADDR2;
-   aMacAddress[3] = ETHERNET_CONF_ETHADDR3;
-   aMacAddress[4] = ETHERNET_CONF_ETHADDR4;
-   aMacAddress[5] = ETHERNET_CONF_ETHADDR5;
+static void prv_v_set_default_macaddr(unsigned portCHAR aMacAddress[]) {
+	aMacAddress[0] = ETHERNET_CONF_ETHADDR0;
+	aMacAddress[1] = ETHERNET_CONF_ETHADDR1;
+	aMacAddress[2] = ETHERNET_CONF_ETHADDR2;
+	aMacAddress[3] = ETHERNET_CONF_ETHADDR3;
+	aMacAddress[4] = ETHERNET_CONF_ETHADDR4;
+	aMacAddress[5] = ETHERNET_CONF_ETHADDR5;
 }
 
 /*!
@@ -582,26 +575,25 @@ static void prv_v_set_default_macaddr( unsigned portCHAR aMacAddress[] )
  *  \param pxNetMask      pointer on network mask address struct
  *  \param pxGateway      pointer on gateway Ip address struct
  */
-static void prv_v_set_default_netconfig( unsigned portCHAR aMacAddress[],
-                                         struct ip_addr *pxIpAddr,
-                                         struct ip_addr *pxNetMask,
-                                         struct ip_addr *pxGateway )
-{
-   // Default MAC addr.
-   prv_v_set_default_macaddr( aMacAddress );
-   // pass the MACB address to AVR32_EMAC module
-   vMACBSetMACAddress( aMacAddress );
-   // set MAC hardware address length to be used by lwIP
-   // MACB_if.hwaddr_len = 6;
-   // set MAC hardware address to be used by lwIP
-   // memcpy(MACB_if.hwaddr, aMacAddress, MACB_if.hwaddr_len);
+static void prv_v_set_default_netconfig(unsigned portCHAR aMacAddress[], struct ip_addr *pxIpAddr, struct ip_addr *pxNetMask, struct ip_addr *pxGateway) {
+	// Default MAC addr.
+	prv_v_set_default_macaddr(aMacAddress);
 
-   // Default ip addr.
-   IP4_ADDR(pxIpAddr,ETHERNET_CONF_IPADDR0,ETHERNET_CONF_IPADDR1,ETHERNET_CONF_IPADDR2,ETHERNET_CONF_IPADDR3);
+	// pass the MACB address to AVR32_EMAC module
+	vMACBSetMACAddress(aMacAddress);
 
-   // Default Subnet mask.
-   IP4_ADDR(pxNetMask,ETHERNET_CONF_NET_MASK0,ETHERNET_CONF_NET_MASK1,ETHERNET_CONF_NET_MASK2,ETHERNET_CONF_NET_MASK3);
+	// set MAC hardware address length to be used by lwIP
+//	MACB_if.hwaddr_len = 6;
 
-   // Default Gw addr.
-   IP4_ADDR(pxGateway,ETHERNET_CONF_GATEWAY_ADDR0,ETHERNET_CONF_GATEWAY_ADDR1,ETHERNET_CONF_GATEWAY_ADDR2,ETHERNET_CONF_GATEWAY_ADDR3);
+	// set MAC hardware address to be used by lwIP
+//	memcpy(MACB_if.hwaddr, aMacAddress, MACB_if.hwaddr_len);
+
+	// Default ip addr.
+	IP4_ADDR(pxIpAddr,ETHERNET_CONF_IPADDR0,ETHERNET_CONF_IPADDR1,ETHERNET_CONF_IPADDR2,ETHERNET_CONF_IPADDR3);
+
+	// Default Subnet mask.
+	IP4_ADDR(pxNetMask,ETHERNET_CONF_NET_MASK0,ETHERNET_CONF_NET_MASK1,ETHERNET_CONF_NET_MASK2,ETHERNET_CONF_NET_MASK3);
+
+	// Default Gw addr.
+	IP4_ADDR(pxGateway,ETHERNET_CONF_GATEWAY_ADDR0,ETHERNET_CONF_GATEWAY_ADDR1,ETHERNET_CONF_GATEWAY_ADDR2,ETHERNET_CONF_GATEWAY_ADDR3);
 }

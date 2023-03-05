@@ -196,16 +196,13 @@ extern xSemaphoreHandle   xCFGMutex;
 //_____ D E C L A R A T I O N S ____________________________________________
 
 /* The function that implements the single connection. */
-portTASK_FUNCTION_PROTO( prvweb_ProcessSingleConnection, pvParameters );
+portTASK_FUNCTION_PROTO(prvweb_ProcessSingleConnection, pvParameters);
 
 
-#if configCTRLPANEL_TRACE == 1
-/*!
- * \brief Print dev info on the trace port.
- */
-void v_basicweb_trace( void )
-{
-   NAKED_TRACE_COM2( "BASICWEB:<%d>", sCurrentNbHTTPConn );
+#if (configCTRLPANEL_TRACE == 1)
+/*! \brief Print dev info on the trace port */
+void v_basicweb_trace(void) {
+	NAKED_TRACE_COM2("BASICWEB:<%d>", sCurrentNbHTTPConn);
 }
 #endif
 
@@ -214,66 +211,54 @@ void v_basicweb_trace( void )
  *         check for incoming connection and process it
  *
  */
-portTASK_FUNCTION( vBasicWEBServer, pvParameters )
-{
-  struct netconn  *pxHTTPListener, *pxNewConnection;
-  portCHAR        token[6];
-  portSHORT       TaskIdx;
-  portLONG        err_count;
+portTASK_FUNCTION(vBasicWEBServer, pvParameters) {
+	struct netconn *pxHTTPListener, *pxNewConnection;
+	portCHAR token[6];
+	portSHORT TaskIdx;
+	portLONG err_count;
 
 
-  /* initialize current nb connection */
-  sCurrentNbHTTPConn = 0;
-  vSemaphoreCreateBinary( xMutexNbHTTPConn );
+	/* initialize current nb connection */
+	sCurrentNbHTTPConn = 0;
+	vSemaphoreCreateBinary(xMutexNbHTTPConn);
 
-  x_default_page_len = strlen( pcDefaultPage );
+	x_default_page_len = strlen(pcDefaultPage);
 
-  /* HTTP configuration. */
-  // Get the xCFGMutex.
-  if( pdFALSE == x_supervisor_SemaphoreTake( xCFGMutex, 0 ) )
-  {
-    // Failed to get the CFG mutex, use the default HTTP config.
-    webHttpPort = webHTTP_PORT;
-  }
-  // Mutex has been taken
-  else
-  {
-    // get the field value for port number
-    if (config_file_get_value(HTTP_CONFIG_FILE, "port" , token) >= 0)
-    {
-      sscanf(token, "%u", &webHttpPort);
-    }
-    // if it does not exist, use the default value
-    else
-    {
-      webHttpPort = webHTTP_PORT;
-    }
-    // Release the xCFGMutex.
-    x_supervisor_SemaphoreGive( xCFGMutex );
-  }
-
-  // Create a new tcp connection handle
-  pxHTTPListener = netconn_new( NETCONN_TCP );
-  netconn_bind(pxHTTPListener, NULL, webHttpPort );
-  netconn_listen( pxHTTPListener );
-  // Loop forever
-  for( ;; )
-  {
-#if ( (LWIP_VERSION) == ((1U << 24) | (3U << 16) | (2U << 8) | (LWIP_VERSION_RC)) )
-    /* Wait for a first connection. */
-    pxNewConnection = netconn_accept(pxHTTPListener);
-#else
-    while(netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK)
-    {
-		vTaskDelay( webSHORT_DELAY );
+	/* HTTP configuration. */
+	// Get the xCFGMutex.
+	if (pdFALSE == x_supervisor_SemaphoreTake(xCFGMutex, 0)) {
+		// Failed to get the CFG mutex, use the default HTTP config.
+		webHttpPort = webHTTP_PORT;
+	} else {	// Mutex has been taken
+		// get the field value for port number
+		if (config_file_get_value(HTTP_CONFIG_FILE, "port" , token) >= 0) {
+			sscanf(token, "%u", &webHttpPort);
+		} else {	// if it does not exist, use the default value
+			webHttpPort = webHTTP_PORT;
+		}
+		// Release the xCFGMutex.
+		x_supervisor_SemaphoreGive(xCFGMutex);
 	}
+
+	// Create a new tcp connection handle
+	pxHTTPListener = netconn_new( NETCONN_TCP );
+	netconn_bind(pxHTTPListener, NULL, webHttpPort );
+	netconn_listen( pxHTTPListener );
+
+	// Loop forever
+	while (1) {
+#if ((LWIP_VERSION) == ((1U << 24) | (3U << 16) | (2U << 8) | (LWIP_VERSION_RC)))
+		/* Wait for a first connection. */
+		pxNewConnection = netconn_accept(pxHTTPListener);
+#else
+		while (netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK) {
+			vTaskDelay( webSHORT_DELAY );
+		}
 #endif
-    if(pxNewConnection != NULL)
-    {
+	if (pxNewConnection != NULL) {
       /* read the nb of connection, no need to use Mutex */
-      while( webHTTP_NB_CONN == sCurrentNbHTTPConn )
-      {
-        vTaskDelay( webSHORT_DELAY );
+      while (webHTTP_NB_CONN == sCurrentNbHTTPConn) {
+        vTaskDelay(webSHORT_DELAY);
       }
 
       // Take the xWEBMutex if there are no active connections.

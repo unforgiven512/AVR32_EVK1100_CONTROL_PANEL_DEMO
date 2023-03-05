@@ -268,13 +268,13 @@ b_supervisor_leave_waitingforhost_mode
 portCHAR Line[MMI_NB_LINE][MMI_LINE_LENGTH + 1];
 
 /*! pointer to the memory image of the param line */
-portCHAR * ParamScreen = Line[PARAM_LINE - 1];
+portCHAR *ParamScreen = Line[PARAM_LINE - 1];
 /*! pointer to the memory image of the date line */
-portCHAR * DateScreen = Line[DATE_LINE - 1];
+portCHAR *DateScreen = Line[DATE_LINE - 1];
 /*! pointer to the memory image of the User Menu line */
-portCHAR * UserMenuScreen = Line[USER_MENU_LINE - 1];
+portCHAR *UserMenuScreen = Line[USER_MENU_LINE - 1];
 /*! pointer to the memory image of the User Mess line */
-portCHAR * UserMessScreen = Line[USER_MESS_LINE - 1];
+portCHAR *UserMessScreen = Line[USER_MESS_LINE - 1];
 
 /*! current MMI user menu to handle */
 eUserMenu eCurrentUserMenu = eUserMenuIdle;
@@ -286,7 +286,7 @@ portCHAR cMMI_SubMenu_CurrentItem = 0;
 static xQueueHandle xMMIQueue = 0;
 
 /*! Temporary array to set the creation date of the LOG directory. */
-static char      pcTempoDate[17];
+static char pcTempoDate[17];
 
 /*! The handle of the queue of SUPERVISOR. */
 extern xQueueHandle xSUPERVISORQueue;
@@ -297,18 +297,17 @@ extern signed short sMmiNavId;
 static void prvMMI_Init(void); // Forward declaration
 
 /*! The "LOG" string. */
-const signed portCHAR *const pcStringLogDirName = (signed portCHAR *)"LOG";
+const signed portCHAR *const pcStringLogDirName = (signed portCHAR*)"LOG";
 
 /*! The \<drive letter>:/LOG strings. */
 extern const signed portCHAR *const pcStringLogDirectoryNameA;
 extern const signed portCHAR *const pcStringLogDirectoryNameB;
 
+
 /*-----------------------------------------------------------*/
-/*! \brief Init MMI, for Man to Machine Interface management.
- *
- */
-bool bMMI_start( void )
-{
+
+/*! \brief Init MMI, for Man to Machine Interface management. */
+bool bMMI_start(void) {
 unsigned short i;
 
   for (i = 0 ; i < MMI_NB_LINE ; i++)

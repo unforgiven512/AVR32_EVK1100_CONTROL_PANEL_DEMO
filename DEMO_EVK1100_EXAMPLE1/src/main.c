@@ -114,10 +114,11 @@ const char *const pcCtrlPanelVersion = "IAR "ASTRINGZ(__VER__)"G "__DATE__" "__T
 //! \return Should never occur.
 //! \note
 //!
-int main(void)
-{
+int main(void) {
+#if !defined(ENABLE_WDT)
 	// Disable the WDT.
-	// wdt_disable();
+	wdt_disable();
+#endif
 
 	//**
 	//** 1) Initialize the microcontroller and the shared hardware resources of the board.
@@ -185,35 +186,31 @@ int main(void)
 /*! \brief Initialize AT45DBX resources: GPIO, SPI and AT45DBX
  *
  */
-static void prv_at45dbx_resources_init(void)
-{
-	static const gpio_map_t AT45DBX_SPI_GPIO_MAP =
-	{
-		{AT45DBX_SPI_SCK_PIN,          AT45DBX_SPI_SCK_FUNCTION         },  // SPI Clock.
-		{AT45DBX_SPI_MISO_PIN,         AT45DBX_SPI_MISO_FUNCTION        },  // MISO.
-		{AT45DBX_SPI_MOSI_PIN,         AT45DBX_SPI_MOSI_FUNCTION        },  // MOSI.
-#define AT45DBX_ENABLE_NPCS_PIN(NPCS, unused) \
-		{AT45DBX_SPI_NPCS##NPCS##_PIN, AT45DBX_SPI_NPCS##NPCS##_FUNCTION},  // Chip Select NPCS.
+static void prv_at45dbx_resources_init(void) {
+	static const gpio_map_t AT45DBX_SPI_GPIO_MAP = {
+		{ AT45DBX_SPI_SCK_PIN, AT45DBX_SPI_SCK_FUNCTION },						// SPI Clock
+		{ AT45DBX_SPI_MISO_PIN, AT45DBX_SPI_MISO_FUNCTION },					// MISO
+		{ AT45DBX_SPI_MOSI_PIN, AT45DBX_SPI_MOSI_FUNCTION },					// MOSI
+#define AT45DBX_ENABLE_NPCS_PIN(NPCS, unused)								\
+		{ AT45DBX_SPI_NPCS##NPCS##_PIN, AT45DBX_SPI_NPCS##NPCS##_FUNCTION },	// Chip Select NPCS
 		MREPEAT(AT45DBX_MEM_CNT, AT45DBX_ENABLE_NPCS_PIN, ~)
 #undef AT45DBX_ENABLE_NPCS_PIN
 	};
 
 	// SPI options.
-	spi_options_t spiOptions =
-	{
-		.reg          = AT45DBX_SPI_FIRST_NPCS,   // Defined in conf_at45dbx.h.
-		.baudrate     = AT45DBX_SPI_MASTER_SPEED, // Defined in conf_at45dbx.h.
-		.bits         = AT45DBX_SPI_BITS,         // Defined in conf_at45dbx.h.
-		.spck_delay   = 0,
-		.trans_delay  = 0,
-		.stay_act     = 1,
-		.spi_mode     = 0,
-		.modfdis      = 1
+	spi_options_t spiOptions = {
+		.reg = AT45DBX_SPI_FIRST_NPCS,   // Defined in conf_at45dbx.h.
+		.baudrate = AT45DBX_SPI_MASTER_SPEED, // Defined in conf_at45dbx.h.
+		.bits = AT45DBX_SPI_BITS,         // Defined in conf_at45dbx.h.
+		.spck_delay = 0,
+		.trans_delay = 0,
+		.stay_act = 1,
+		.spi_mode = 0,
+		.modfdis = 1
 	};
 
 	// Assign I/Os to SPI.
-	gpio_enable_module(AT45DBX_SPI_GPIO_MAP,
-			sizeof(AT45DBX_SPI_GPIO_MAP) / sizeof(AT45DBX_SPI_GPIO_MAP[0]));
+	gpio_enable_module(AT45DBX_SPI_GPIO_MAP, sizeof(AT45DBX_SPI_GPIO_MAP) / sizeof(AT45DBX_SPI_GPIO_MAP[0]));
 
 	// If the SPI used by the AT45DBX is not enabled.
 	if (!spi_is_enabled(AT45DBX_SPI)) {
@@ -232,23 +229,19 @@ static void prv_at45dbx_resources_init(void)
 }
 
 
-#if SD_MMC_SPI_MEM == ENABLE
+#if (SD_MMC_SPI_MEM == ENABLE)
 
-/*! \brief Initializes SD/MMC resources: GPIO, SPI and SD/MMC.
- */
-static void prv_sd_mmc_resources_init(void)
-{
-	static const gpio_map_t SD_MMC_SPI_GPIO_MAP =
-	{
-		{SD_MMC_SPI_SCK_PIN,  SD_MMC_SPI_SCK_FUNCTION },  // SPI Clock.
-		{SD_MMC_SPI_MISO_PIN, SD_MMC_SPI_MISO_FUNCTION},  // MISO.
-		{SD_MMC_SPI_MOSI_PIN, SD_MMC_SPI_MOSI_FUNCTION},  // MOSI.
-		{SD_MMC_SPI_NPCS_PIN, SD_MMC_SPI_NPCS_FUNCTION}   // Chip Select NPCS.
+/*! \brief Initializes SD/MMC resources: GPIO, SPI and SD/MMC. */
+static void prv_sd_mmc_resources_init(void) {
+	static const gpio_map_t SD_MMC_SPI_GPIO_MAP = {
+		{ SD_MMC_SPI_SCK_PIN,  SD_MMC_SPI_SCK_FUNCTION },  // SPI Clock.
+		{ SD_MMC_SPI_MISO_PIN, SD_MMC_SPI_MISO_FUNCTION },  // MISO.
+		{ SD_MMC_SPI_MOSI_PIN, SD_MMC_SPI_MOSI_FUNCTION },  // MOSI.
+		{ SD_MMC_SPI_NPCS_PIN, SD_MMC_SPI_NPCS_FUNCTION }   // Chip Select NPCS.
 	};
 
 	// SPI options.
-	spi_options_t spiOptions =
-	{
+	spi_options_t spiOptions = {
 		.reg          = SD_MMC_SPI_NPCS,
 		.baudrate     = SD_MMC_SPI_MASTER_SPEED,  // Defined in conf_sd_mmc_spi.h.
 		.bits         = SD_MMC_SPI_BITS,          // Defined in conf_sd_mmc_spi.h.
@@ -285,8 +278,7 @@ static void prv_sd_mmc_resources_init(void)
 /*!
  *  Start the generation of a 48-MHz clock for the USB
  */
-static void prv_clk_gen_start(void)
-{
+static void prv_clk_gen_start(void) {
 	volatile avr32_pm_t *pm = &AVR32_PM;
 
 	/** USB **/
@@ -323,7 +315,7 @@ static void prv_clk_gen_start(void)
 
 
 	/** MACB **/
-#if CP_CPU_SPEED == 60000000
+#if (CP_CPU_SPEED == 60000000)
 
 	/* Setup PLL0 on OSC0, mul+1=10 ,divisor by 1, lockcount=16, ie. 12Mhzx10/1 = 120MHz output.
 		Extra div by 2 => 60MHz */
